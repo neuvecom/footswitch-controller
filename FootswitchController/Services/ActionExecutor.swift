@@ -15,6 +15,8 @@ enum ActionExecutor {
             break
         case .keystroke(let keyCode, let mods):
             sendKeystroke(keyCode: keyCode, modifiers: mods)
+        case .typeText(let text):
+            typeText(text)
         case .openURL(let url):
             NSWorkspace.shared.open(url)
         case .runShellScript(let script):
@@ -69,6 +71,40 @@ enum ActionExecutor {
         keyUp.post(tap: .cghidEventTap)
     }
 
+
+    // MARK: - Type Text
+
+    /// 任意のテキストをそのままタイプする。
+    ///
+    /// `keyboardSetUnicodeString` で Unicode 文字列を直接流し込むので、キーボード
+    /// レイアウト非依存で `\n` のような記号もそのまま入力できる。Accessibility 権限で動く。
+    private static func typeText(_ text: String) {
+        guard !text.isEmpty else { return }
+        logger.info("typeText called length=\(text.count)")
+
+        // フットスイッチの keyUp が通過するのを待ってから送る。
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(40)) {
+            guard let src = CGEventSource(stateID: .combinedSessionState) else {
+                logger.error("failed to create CGEventSource")
+                return
+            }
+            guard let keyDown = CGEvent(keyboardEventSource: src, virtualKey: 0, keyDown: true),
+                  let keyUp   = CGEvent(keyboardEventSource: src, virtualKey: 0, keyDown: false) else {
+                logger.error("failed to create CGEvent for typeText")
+                return
+            }
+            // フットスイッチの修飾(Option/Control)が session state に残っていると
+            // Unicode 文字に乗って制御文字化し、入力が無視される。明示的にクリアする。
+            keyDown.flags = []
+            keyUp.flags = []
+            let utf16 = Array(text.utf16)
+            keyDown.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: utf16)
+            keyUp.keyboardSetUnicodeString(stringLength: utf16.count, unicodeString: utf16)
+            logger.info("post typeText unicode length=\(utf16.count, privacy: .public)")
+            keyDown.post(tap: .cghidEventTap)
+            keyUp.post(tap: .cghidEventTap)
+        }
+    }
 
     // MARK: - Scripts
 

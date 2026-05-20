@@ -42,6 +42,20 @@ struct ActionEditor: View {
         case .keystroke(let code, let mods):
             keystrokeEditor(code: code, mods: mods)
 
+        case .typeText(let text):
+            VStack(alignment: .leading, spacing: 4) {
+                TextEditor(text: Binding(
+                    get: { text },
+                    set: { action = .typeText($0) }
+                ))
+                .font(.system(.body, design: .monospaced))
+                .frame(minHeight: 60)
+                .border(Color.secondary.opacity(0.3))
+                Text("入力した文字列をそのままタイプします (改行・記号もそのまま)。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
         case .openURL(let url):
             TextField("https://...", text: Binding(
                 get: { url.absoluteString },
@@ -128,6 +142,9 @@ struct ActionEditor: View {
         case .keystroke:
             if case .keystroke = current { return current }
             return .keystroke(keyCode: 36, modifiers: []) // Return
+        case .typeText:
+            if case .typeText = current { return current }
+            return .typeText("\\n")
         case .openURL:
             if case .openURL = current { return current }
             return .openURL(URL(string: "https://example.com")!)

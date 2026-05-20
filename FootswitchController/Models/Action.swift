@@ -5,6 +5,7 @@ import Foundation
 enum FootswitchAction: Codable, Hashable {
     case none
     case keystroke(keyCode: UInt16, modifiers: ModifierSet)
+    case typeText(String)
     case openURL(URL)
     case runShellScript(String)
     case runAppleScript(String)
@@ -17,6 +18,7 @@ enum FootswitchAction: Codable, Hashable {
             let modString = mods.symbolString
             let keyName = KeyCodes.name(for: code) ?? "key(\(code))"
             return modString.isEmpty ? keyName : "\(modString)\(keyName)"
+        case .typeText(let text): return "Type \"\(text)\""
         case .openURL(let url): return "Open \(url.absoluteString)"
         case .runShellScript: return "Shell Script"
         case .runAppleScript: return "AppleScript"
@@ -28,6 +30,7 @@ enum FootswitchAction: Codable, Hashable {
         switch self {
         case .none: return "None"
         case .keystroke: return "Keystroke"
+        case .typeText: return "Type Text"
         case .openURL: return "Open URL"
         case .runShellScript: return "Shell"
         case .runAppleScript: return "AppleScript"
@@ -38,13 +41,14 @@ enum FootswitchAction: Codable, Hashable {
 
 /// アクションの種類だけを表す列挙 (UI のドロップダウン用)。
 enum ActionKind: String, CaseIterable, Identifiable {
-    case none, keystroke, openURL, runShellScript, runAppleScript, switchMode
+    case none, keystroke, typeText, openURL, runShellScript, runAppleScript, switchMode
     var id: String { rawValue }
 
     var label: String {
         switch self {
         case .none: return "なし"
         case .keystroke: return "キーストローク"
+        case .typeText: return "テキストを打つ"
         case .openURL: return "URL を開く"
         case .runShellScript: return "Shell スクリプト"
         case .runAppleScript: return "AppleScript"
@@ -56,6 +60,7 @@ enum ActionKind: String, CaseIterable, Identifiable {
         switch action {
         case .none: return .none
         case .keystroke: return .keystroke
+        case .typeText: return .typeText
         case .openURL: return .openURL
         case .runShellScript: return .runShellScript
         case .runAppleScript: return .runAppleScript

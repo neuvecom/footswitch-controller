@@ -210,11 +210,13 @@ struct MenuBarContentView: View {
                 .padding(8)
                 .background(Color.blue.opacity(0.12))
                 .cornerRadius(6)
+            } else if updateChecker.didCheckManually {
+                updateResultMessage
             }
             HStack {
                 Button("設定…") { openSettings() }
                 Button {
-                    Task { await updateChecker.check() }
+                    Task { await updateChecker.check(manual: true) }
                 } label: {
                     Text(updateChecker.isChecking ? "確認中…" : "更新を確認")
                 }
@@ -228,6 +230,34 @@ struct MenuBarContentView: View {
                 }
                 .keyboardShortcut("q")
             }
+        }
+    }
+
+    @ViewBuilder
+    private var updateResultMessage: some View {
+        switch updateChecker.lastResult {
+        case .upToDate:
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                Text("最新バージョンです (v\(updateChecker.currentVersion))")
+                    .font(.caption)
+                Spacer()
+            }
+            .padding(8)
+            .background(Color.green.opacity(0.10))
+            .cornerRadius(6)
+        case .failed:
+            HStack(spacing: 6) {
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                Text("更新を確認できませんでした (ネットワークを確認してください)")
+                    .font(.caption)
+                Spacer()
+            }
+            .padding(8)
+            .background(Color.orange.opacity(0.10))
+            .cornerRadius(6)
+        case .unknown, .updateAvailable:
+            EmptyView()
         }
     }
 

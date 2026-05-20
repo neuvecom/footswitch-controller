@@ -5,6 +5,13 @@ private let logger = Logger(subsystem: "com.luckysama.footswitch-controller", ca
 
 /// GitHub Releases の最新版をチェックする軽量アップデート確認。
 /// 自動ダウンロードはせず、新バージョンがあればリリースページへ誘導する。
+enum UpdateCheckResult {
+    case unknown      // 未チェック
+    case upToDate     // 最新
+    case updateAvailable
+    case failed       // 通信エラー等
+}
+
 @MainActor
 final class UpdateChecker: ObservableObject {
     @Published private(set) var latestVersion: String?
@@ -12,6 +19,9 @@ final class UpdateChecker: ObservableObject {
     @Published private(set) var isChecking = false
     @Published private(set) var lastCheckedAt: Date?
     @Published private(set) var releaseURL: URL?
+    @Published private(set) var lastResult: UpdateCheckResult = .unknown
+    /// 手動で「更新を確認」を押したか。起動時の自動チェックでは結果メッセージを出さないため。
+    @Published private(set) var didCheckManually = false
 
     private let repo = "neuvecom/footswitch-controller"
 
@@ -28,12 +38,16 @@ final class UpdateChecker: ObservableObject {
         }
     }
 
-    func check() async {
+    func check(manual: Bool = false) async {
         guard !isChecking else { return }
         isChecking = true
+        if manual { didCheckManually = true }
         defer { isChecking = false; lastCheckedAt = Date() }
 
-        guard let url = URL(string: "https://api.github.com/repos/\(repo)/releases/latest") else { return }
+        guard let url = URL(string: "https://api.github.com/repos/\(repo)/releases/latest") else {
+            lastResult = .failed
+            return
+        }
         var request = URLRequest(url: url)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 10
@@ -42,6 +56,7 @@ final class UpdateChecker: ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
                 logger.error("update check HTTP error: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+                lastResult = .failed
                 return
             }
             let release = try JSONDecoder().decode(Release.self, from: data)
@@ -49,9 +64,11 @@ final class UpdateChecker: ObservableObject {
             self.latestVersion = latest
             self.releaseURL = release.htmlURL
             self.updateAvailable = Self.isNewer(latest, than: Self.normalize(currentVersion))
+            self.lastResult = self.updateAvailable ? .updateAvailable : .upToDate
             logger.info("update check: latest=\(latest, privacy: .public) current=\(self.currentVersion, privacy: .public) available=\(self.updateAvailable, privacy: .public)")
         } catch {
             logger.error("update check failed: \(String(describing: error), privacy: .public)")
+            lastResult = .failed
         }
     }
 

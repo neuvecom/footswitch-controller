@@ -5,6 +5,7 @@ struct MenuBarContentView: View {
     @ObservedObject var appWatcher: AppWatcher
     @ObservedObject var store: SettingsStore
     @ObservedObject var dispatcher: ActionDispatcher
+    @ObservedObject var updateChecker: UpdateChecker
     let openSettings: () -> Void
     let openOnboarding: () -> Void
 
@@ -195,13 +196,38 @@ struct MenuBarContentView: View {
     }
 
     private var footer: some View {
-        HStack {
-            Button("設定…") { openSettings() }
-            Spacer()
-            Button("終了") {
-                NSApplication.shared.terminate(nil)
+        VStack(spacing: 8) {
+            if updateChecker.updateAvailable, let url = updateChecker.releaseURL {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .foregroundStyle(.blue)
+                    Text("新しいバージョン \(updateChecker.latestVersion ?? "") があります")
+                        .font(.caption)
+                    Spacer()
+                    Button("ダウンロード") { NSWorkspace.shared.open(url) }
+                        .controlSize(.small)
+                }
+                .padding(8)
+                .background(Color.blue.opacity(0.12))
+                .cornerRadius(6)
             }
-            .keyboardShortcut("q")
+            HStack {
+                Button("設定…") { openSettings() }
+                Button {
+                    Task { await updateChecker.check() }
+                } label: {
+                    Text(updateChecker.isChecking ? "確認中…" : "更新を確認")
+                }
+                .disabled(updateChecker.isChecking)
+                Spacer()
+                Text("v\(updateChecker.currentVersion)")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                Button("終了") {
+                    NSApplication.shared.terminate(nil)
+                }
+                .keyboardShortcut("q")
+            }
         }
     }
 

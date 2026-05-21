@@ -24,7 +24,7 @@ final class SettingsWindowController {
         let win = NSWindow(contentViewController: hosting)
         win.title = "Footswitch 設定"
         win.styleMask = [.titled, .closable, .resizable, .miniaturizable]
-        win.setContentSize(NSSize(width: 760, height: 480))
+        win.setContentSize(NSSize(width: 760, height: 580))
         win.isReleasedWhenClosed = false
         win.center()
         self.window = win

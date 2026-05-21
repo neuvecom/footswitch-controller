@@ -24,7 +24,7 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(minWidth: 720, minHeight: 460)
+        .frame(minWidth: 720, minHeight: 560)
         .onAppear {
             if selectedProfileID == nil { selectedProfileID = store.profiles.first?.id }
         }

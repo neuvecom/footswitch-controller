@@ -40,7 +40,10 @@ struct ActionEditor: View {
                 .foregroundStyle(.secondary)
 
         case .keystroke(let code, let mods):
-            keystrokeEditor(code: code, mods: mods)
+            keystrokeEditor(code: code, mods: mods, isRepeat: false)
+
+        case .repeatKeystroke(let code, let mods):
+            keystrokeEditor(code: code, mods: mods, isRepeat: true)
 
         case .typeText(let text):
             VStack(alignment: .leading, spacing: 4) {
@@ -96,14 +99,20 @@ struct ActionEditor: View {
         }
     }
 
+    /// `code` / `mods` / 連射フラグから対応する Action を作る。
+    private func makeKeystroke(code: UInt16, mods: ModifierSet, isRepeat: Bool) -> FootswitchAction {
+        isRepeat ? .repeatKeystroke(keyCode: code, modifiers: mods)
+                 : .keystroke(keyCode: code, modifiers: mods)
+    }
+
     @ViewBuilder
-    private func keystrokeEditor(code: UInt16, mods: ModifierSet) -> some View {
+    private func keystrokeEditor(code: UInt16, mods: ModifierSet, isRepeat: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 Text("キー")
                 Picker("", selection: Binding(
                     get: { code },
-                    set: { action = .keystroke(keyCode: $0, modifiers: mods) }
+                    set: { action = makeKeystroke(code: $0, mods: mods, isRepeat: isRepeat) }
                 )) {
                     ForEach(KeyCodes.presets, id: \.code) { preset in
                         Text(preset.name).tag(preset.code)
@@ -113,24 +122,34 @@ struct ActionEditor: View {
                 .frame(maxWidth: 180)
             }
             HStack(spacing: 12) {
-                modToggle("⌘", .command, code: code, mods: mods)
-                modToggle("⌥", .option,  code: code, mods: mods)
-                modToggle("⌃", .control, code: code, mods: mods)
-                modToggle("⇧", .shift,   code: code, mods: mods)
+                modToggle("⌘", .command, code: code, mods: mods, isRepeat: isRepeat)
+                modToggle("⌥", .option,  code: code, mods: mods, isRepeat: isRepeat)
+                modToggle("⌃", .control, code: code, mods: mods, isRepeat: isRepeat)
+                modToggle("⇧", .shift,   code: code, mods: mods, isRepeat: isRepeat)
             }
-            Text("送信例: \(FootswitchAction.keystroke(keyCode: code, modifiers: mods).displayName)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Toggle("連射", isOn: Binding(
+                get: { isRepeat },
+                set: { action = makeKeystroke(code: code, mods: mods, isRepeat: $0) }
+            ))
+            if isRepeat {
+                Text("踏むと \(FootswitchAction.repeatIntervalMs)ms 間隔で連射し、\(String(format: "%.1f", Double(FootswitchAction.repeatDurationMs) / 1000)) 秒で自動停止します (連射中に踏むと延長)。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text("送信例: \(FootswitchAction.keystroke(keyCode: code, modifiers: mods).displayName)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
-    private func modToggle(_ label: String, _ flag: ModifierSet, code: UInt16, mods: ModifierSet) -> some View {
+    private func modToggle(_ label: String, _ flag: ModifierSet, code: UInt16, mods: ModifierSet, isRepeat: Bool) -> some View {
         Toggle(label, isOn: Binding(
             get: { mods.contains(flag) },
             set: { isOn in
                 var newMods = mods
                 if isOn { newMods.insert(flag) } else { newMods.remove(flag) }
-                action = .keystroke(keyCode: code, modifiers: newMods)
+                action = makeKeystroke(code: code, mods: newMods, isRepeat: isRepeat)
             }
         ))
         .toggleStyle(.button)
@@ -140,7 +159,9 @@ struct ActionEditor: View {
         switch kind {
         case .none: return .none
         case .keystroke:
+            // 連射(.repeatKeystroke)もキーストローク種別として扱い、現状を保持する。
             if case .keystroke = current { return current }
+            if case .repeatKeystroke = current { return current }
             return .keystroke(keyCode: 36, modifiers: []) // Return
         case .typeText:
             if case .typeText = current { return current }

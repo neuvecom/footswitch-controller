@@ -15,6 +15,10 @@ enum ActionExecutor {
             break
         case .keystroke(let keyCode, let mods):
             sendKeystroke(keyCode: keyCode, modifiers: mods)
+        case .repeatKeystroke:
+            // トグル式連射は状態を持つため ActionDispatcher (KeystrokeRepeater) 側で処理する。
+            // ここに来た場合は何もしない。
+            break
         case .typeText(let text):
             typeText(text)
         case .openURL(let url):
@@ -46,6 +50,17 @@ enum ActionExecutor {
         DispatchQueue.main.asyncAfter(deadline: delay) {
             sendViaCGEvent(keyCode: keyCode, modifiers: modifiers)
         }
+    }
+
+    /// 遅延なしで即座にキーを送る (トグル連射のタイマー tick 用)。
+    /// 連射開始の初回はフットスイッチ自身の F13 keyUp と衝突しうるので、呼び出し側で
+    /// 40ms 待ってから最初の tick を始めること。
+    static func sendKeystrokeImmediate(keyCode: UInt16, modifiers: ModifierSet) {
+        if forbiddenKeyCodes.contains(keyCode) {
+            logger.warning("refusing to send forbidden keyCode=\(keyCode)")
+            return
+        }
+        sendViaCGEvent(keyCode: keyCode, modifiers: modifiers)
     }
 
     /// CGEvent でキーを送る。

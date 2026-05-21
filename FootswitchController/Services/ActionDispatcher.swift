@@ -22,6 +22,7 @@ final class ActionDispatcher: ObservableObject {
     private let monitor: KeyEventMonitor
     private let appWatcher: AppWatcher
     private let store: SettingsStore
+    private let repeater = KeystrokeRepeater()
     private var cancellables: Set<AnyCancellable> = []
 
     init(monitor: KeyEventMonitor, appWatcher: AppWatcher, store: SettingsStore) {
@@ -57,8 +58,15 @@ final class ActionDispatcher: ObservableObject {
             return
         }
         let action = mode.action(for: button)
-        ActionExecutor.execute(action) { [weak self] modeID in
-            self?.store.setActiveMode(modeID, in: profile.id)
+        if case .repeatKeystroke(let code, let mods) = action {
+            // 一定時間で自動停止する連射。踏むと開始、もう一度踏むと延長。間隔・継続は固定値。
+            repeater.trigger(keyCode: code, modifiers: mods,
+                             intervalMs: FootswitchAction.repeatIntervalMs,
+                             durationMs: FootswitchAction.repeatDurationMs)
+        } else {
+            ActionExecutor.execute(action) { [weak self] modeID in
+                self?.store.setActiveMode(modeID, in: profile.id)
+            }
         }
         lastDispatch = DispatchRecord(
             date: Date(), button: button,

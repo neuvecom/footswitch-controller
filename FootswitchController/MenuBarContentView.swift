@@ -6,6 +6,7 @@ struct MenuBarContentView: View {
     @ObservedObject var store: SettingsStore
     @ObservedObject var dispatcher: ActionDispatcher
     @ObservedObject var updateChecker: UpdateChecker
+    @ObservedObject var loginItem: LoginItemManager
     let openSettings: () -> Void
     let openOnboarding: () -> Void
 
@@ -197,6 +198,17 @@ struct MenuBarContentView: View {
 
     private var footer: some View {
         VStack(spacing: 8) {
+            Toggle(isOn: Binding(
+                get: { loginItem.isEnabled },
+                set: { loginItem.setEnabled($0) }
+            )) {
+                Text("ログイン時に起動")
+                    .font(.caption)
+            }
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
             if updateChecker.updateAvailable, let url = updateChecker.releaseURL {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.down.circle.fill")

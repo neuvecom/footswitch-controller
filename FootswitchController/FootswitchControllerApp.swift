@@ -7,6 +7,7 @@ struct FootswitchControllerApp: App {
     @StateObject private var store: SettingsStore
     @StateObject private var dispatcherHolder: DispatcherHolder
     @StateObject private var updateChecker: UpdateChecker
+    @StateObject private var loginItem: LoginItemManager
 
     private let settingsWindow: SettingsWindowController
     private let onboardingWindow: OnboardingWindowController
@@ -23,6 +24,7 @@ struct FootswitchControllerApp: App {
         _store = StateObject(wrappedValue: store)
         _dispatcherHolder = StateObject(wrappedValue: DispatcherHolder(dispatcher: dispatcher))
         _updateChecker = StateObject(wrappedValue: updateChecker)
+        _loginItem = StateObject(wrappedValue: LoginItemManager())
 
         self.settingsWindow = SettingsWindowController(store: store, appWatcher: appWatcher)
         self.onboardingWindow = OnboardingWindowController(monitor: monitor)
@@ -47,6 +49,7 @@ struct FootswitchControllerApp: App {
                 store: store,
                 dispatcher: dispatcherHolder.dispatcher,
                 updateChecker: updateChecker,
+                loginItem: loginItem,
                 openSettings: { settingsWindow.show() },
                 openOnboarding: { onboardingWindow.show() }
             )

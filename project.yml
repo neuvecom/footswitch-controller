@@ -23,7 +23,7 @@ targets:
       properties:
         CFBundleName: FootswitchController
         CFBundleDisplayName: Footswitch Controller
-        CFBundleShortVersionString: "0.2.3"
+        CFBundleShortVersionString: "0.2.4"
         CFBundleVersion: "1"
         LSMinimumSystemVersion: "13.0"
         LSUIElement: true

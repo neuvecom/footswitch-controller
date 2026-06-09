@@ -34,8 +34,9 @@ enum ActionExecutor {
 
     // MARK: - Keystroke
 
-    /// `kVK_F13` などフットスイッチ自身が送ってくるキーは送出禁止 (無限ループ防止)。
-    private static let forbiddenKeyCodes: Set<UInt16> = [105]
+    /// `kVK_F13` (105) / `kVK_F18` (79) などフットスイッチ自身が送ってくるキーは送出禁止
+    /// (自身の tap に戻ってループするため)。
+    private static let forbiddenKeyCodes: Set<UInt16> = [105, 79]
 
     private static func sendKeystroke(keyCode: UInt16, modifiers: ModifierSet) {
         logger.info("sendKeystroke called keyCode=\(keyCode) modifiers=\(modifiers.rawValue, format: .hex)")

@@ -6,12 +6,26 @@ import OSLog
 private let tapLogger = Logger(subsystem: "com.luckysama.footswitch-controller", category: "tap")
 
 /// Footswitch のボタン種別。
+///
+/// 1 台目は F13 (keyCode 105) を、2 台目は F18 (keyCode 79) を送る前提。
+/// 修飾キー (Option / Control) の有無で各 3 ボタンを判別する。
 enum FootswitchButton: String, CaseIterable, Identifiable {
-    case button1 = "Button 1 (F13)"
-    case button2 = "Button 2 (Option+F13)"
-    case button3 = "Button 3 (Ctrl+F13)"
+    case button1 = "Device 1: Button 1 (F13)"
+    case button2 = "Device 1: Button 2 (Option+F13)"
+    case button3 = "Device 1: Button 3 (Ctrl+F13)"
+    case button4 = "Device 2: Button 1 (F18)"
+    case button5 = "Device 2: Button 2 (Option+F18)"
+    case button6 = "Device 2: Button 3 (Ctrl+F18)"
 
     var id: String { rawValue }
+
+    /// このボタンが属するデバイス番号 (1 or 2)。
+    var deviceIndex: Int {
+        switch self {
+        case .button1, .button2, .button3: return 1
+        case .button4, .button5, .button6: return 2
+        }
+    }
 }
 
 /// 監視ログの 1 行。
@@ -57,7 +71,8 @@ final class KeyEventMonitor: ObservableObject {
     private var tapRunLoop: CFRunLoop?
     private var tapThread: Thread?
 
-    private static let f13KeyCode: Int64 = 105
+    private static let f13KeyCode: Int64 = 105  // device 1
+    private static let f18KeyCode: Int64 = 79   // device 2 (F14/F15 はOS的に予約の可能性があるため F18 を採用)
     private static let maxEvents = 200
 
     private var permissionTimer: Timer?
@@ -216,25 +231,30 @@ final class KeyEventMonitor: ObservableObject {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
         let isF13 = (keyCode == Self.f13KeyCode)
+        let isF18 = (keyCode == Self.f18KeyCode)
+        let isFootswitchKey = isF13 || isF18
 
-        // デバッグモード OFF かつ F13 以外なら早期 return。
-        if !debugLogAllKeys && !isF13 { return }
+        // デバッグモード OFF かつ対象キー以外なら早期 return。
+        if !debugLogAllKeys && !isFootswitchKey { return }
 
         let button: FootswitchButton?
-        if isF13 {
+        if isFootswitchKey {
             let hasOption = flags.contains(.maskAlternate)
             let hasControl = flags.contains(.maskControl)
-            switch (hasOption, hasControl) {
-            case (true, false): button = .button2
-            case (false, true): button = .button3
-            case (false, false): button = .button1
-            case (true, true): button = nil // 仕様外。デバッグログとしてだけ残す。
+            switch (isF13, hasOption, hasControl) {
+            case (true,  false, false): button = .button1
+            case (true,  true,  false): button = .button2
+            case (true,  false, true):  button = .button3
+            case (false, false, false): button = .button4
+            case (false, true,  false): button = .button5
+            case (false, false, true):  button = .button6
+            default: button = nil // 仕様外 (両方の修飾 ON など)。デバッグログとしてだけ残す。
             }
         } else {
             button = nil
         }
 
-        // 仕様外の F13 組み合わせは、デバッグモード OFF なら捨てる。
+        // 仕様外の組み合わせは、デバッグモード OFF なら捨てる。
         if !debugLogAllKeys && button == nil { return }
 
         let flagsRaw = flags.rawValue

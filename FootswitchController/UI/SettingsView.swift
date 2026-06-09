@@ -175,20 +175,44 @@ private struct ProfileEditor: View {
 private struct ModeEditor: View {
     @Binding var mode: Mode
     let availableModes: [Mode]
+    @State private var selectedDevice: Int = 1
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 TextField("モード名", text: $mode.name)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 240)
                 Spacer()
             }
-            buttonRow("Button 1 (F13)", binding: $mode.button1)
-            Divider()
-            buttonRow("Button 2 (Option+F13)", binding: $mode.button2)
-            Divider()
-            buttonRow("Button 3 (Ctrl+F13)", binding: $mode.button3)
+            Picker("デバイス", selection: $selectedDevice) {
+                Text("Device 1 (F13)").tag(1)
+                Text("Device 2 (F18)").tag(2)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    if selectedDevice == 1 {
+                        buttonRow("Button 1 (F13)", binding: $mode.button1)
+                        Divider()
+                        buttonRow("Button 2 (Option+F13)", binding: $mode.button2)
+                        Divider()
+                        buttonRow("Button 3 (Ctrl+F13)", binding: $mode.button3)
+                    } else {
+                        Text("2 台目の FS23 を F18 系に焼き込んだ場合のみ使えます。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        buttonRow("Button 1 (F18)", binding: $mode.button4)
+                        Divider()
+                        buttonRow("Button 2 (Option+F18)", binding: $mode.button5)
+                        Divider()
+                        buttonRow("Button 3 (Ctrl+F18)", binding: $mode.button6)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
         }
     }
 

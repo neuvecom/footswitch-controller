@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Footswitch Controller サポート</title>
+<meta name="description" content="PC Sensor FS23 用 macOS メニューバーアプリ「Footswitch Controller」のサポートページ。ダウンロード、初期設定、使い方、トラブルシューティング。">
+<meta property="og:title" content="Footswitch Controller サポート">
+<meta property="og:description" content="USB フットスイッチ PC Sensor FS23 を、アプリごとに好きな操作へ割り当てる macOS アプリ。">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e8590c'/%3E%3Crect x='14' y='22' width='10' height='22' rx='3' fill='white'/%3E%3Crect x='27' y='22' width='10' height='22' rx='3' fill='white'/%3E%3Crect x='40' y='22' width='10' height='22' rx='3' fill='white'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --text: #1d1b19;
+  --muted: #6b6560;
+  --line: #e7e2dc;
+  --accent: #d9480f;
+  --accent-soft: #fff1e8;
+  --code-bg: #f3efe9;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161412;
+    --surface: #1f1c19;
+    --text: #efeae4;
+    --muted: #a39b93;
+    --line: #34302b;
+    --accent: #ff8a4c;
+    --accent-soft: #2c1f17;
+    --code-bg: #2a2622;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Segoe UI", sans-serif;
+  line-height: 1.8;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+code, kbd {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: .88em;
+  background: var(--code-bg);
+  padding: .1em .4em;
+  border-radius: 6px;
+}
+kbd { border: 1px solid var(--line); border-bottom-width: 2px; }
+pre {
+  background: var(--code-bg);
+  padding: 14px 16px;
+  border-radius: 10px;
+  overflow-x: auto;
+  font-size: .88em;
+}
+pre code { background: none; padding: 0; }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+header.top {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(160%) blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+header.top .wrap { display: flex; align-items: center; gap: 16px; height: 56px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; color: var(--text); text-decoration: none; white-space: nowrap; }
+.logo { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; padding: 8px 5px; }
+.logo span { background: #fff; border-radius: 2px; }
+nav { margin-left: auto; display: flex; gap: 18px; overflow-x: auto; font-size: .9em; }
+nav a { color: var(--muted); text-decoration: none; white-space: nowrap; }
+nav a:hover { color: var(--text); }
+
+.hero { padding: 72px 0 48px; }
+.hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.25; margin: 0 0 16px; letter-spacing: -.01em; }
+.hero p.lead { font-size: 1.12em; color: var(--muted); margin: 0 0 28px; max-width: 40em; }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 999px; font-weight: 600; text-decoration: none;
+  border: 1px solid var(--line); color: var(--text); background: var(--surface);
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn:hover { filter: brightness(1.05); }
+.meta { margin-top: 14px; font-size: .88em; color: var(--muted); }
+
+section { padding: 48px 0; border-top: 1px solid var(--line); }
+section h2 { font-size: 1.6rem; margin: 0 0 8px; }
+section > .wrap > p.sub { color: var(--muted); margin: 0 0 24px; }
+h3 { font-size: 1.1rem; margin: 28px 0 8px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+.card h3 { margin: 0 0 6px; font-size: 1rem; }
+.card p { margin: 0; color: var(--muted); font-size: .94em; }
+
+table { width: 100%; border-collapse: collapse; margin: 12px 0 8px; font-size: .95em; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: .88em; }
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 8px; }
+
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 16px 0; }
+ol.steps > li { counter-increment: s; position: relative; padding: 0 0 18px 48px; }
+ol.steps > li::before {
+  content: counter(s); position: absolute; left: 0; top: 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent); font-weight: 700;
+  display: grid; place-items: center; font-size: .9em;
+}
+.note { background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 12px 16px; border-radius: 8px; margin: 16px 0; font-size: .95em; }
+
+details { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 18px; margin-bottom: 10px; }
+details[open] { padding-bottom: 12px; }
+summary { cursor: pointer; padding: 14px 0; font-weight: 600; list-style: none; position: relative; padding-right: 24px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; position: absolute; right: 0; top: 12px; color: var(--muted); font-size: 1.2em; }
+details[open] summary::after { content: "−"; }
+details p, details ul, details ol { margin-top: 0; }
+
+footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: .88em; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
+
+@media (max-width: 640px) {
+  nav { display: none; }
+  .hero { padding: 48px 0 32px; }
+  section { padding: 36px 0; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><span class="logo" aria-hidden="true"><span></span><span></span><span></span></span>Footswitch Controller</a>
+    <nav>
+      <a href="#features">機能</a>
+      <a href="#setup">初期設定</a>
+      <a href="#install">インストール</a>
+      <a href="#usage">使い方</a>
+      <a href="#faq">トラブル対処</a>
+      <a href="#contact">お問い合わせ</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <h1>足元のペダルを、<br>Mac の好きな操作に。</h1>
+      <p class="lead">Footswitch Controller は、USB フットスイッチ <strong>PC Sensor FS23</strong>（3 ボタン）用の macOS メニューバー常駐アプリです。アクティブなアプリやモードごとに、ペダルへキー操作・テキスト入力・URL・スクリプトなどを割り当てられます。</p>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/neuvecom/footswitch-controller/releases/latest/download/FootswitchController.dmg">⬇ 最新版をダウンロード（.dmg）</a>
+        <a class="btn" href="https://github.com/neuvecom/footswitch-controller/releases">リリースノート</a>
+      </div>
+      <p class="meta">macOS 13 Ventura 以降 / Apple Silicon（M1 以降）· 無料・MIT ライセンス · Developer ID 署名 + Apple 公証済み</p>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>主な機能</h2>
+      <p class="sub">3 つのペダルそれぞれに、次のアクションを割り当てられます。</p>
+      <div class="grid">
+        <div class="card"><h3>キーストローク</h3><p>⌘ ⌥ ⌃ ⇧ の修飾キーと組み合わせたキー送出。踏んでいる間 50ms 間隔で送る「連射」にも対応。</p></div>
+        <div class="card"><h3>テキスト入力</h3><p>任意の文字列をそのままタイプ。<code>\n</code> などの改行・記号も使えます。</p></div>
+        <div class="card"><h3>URL を開く</h3><p>Web ページやアプリの URL スキームをワンタップで起動。</p></div>
+        <div class="card"><h3>Shell / AppleScript</h3><p>スクリプトを実行して、複雑な処理も足元から。</p></div>
+        <div class="card"><h3>アプリ別 + モード切替</h3><p>前面アプリごとに割り当てを変え、1 アプリ内でも複数モードを切り替え可能。</p></div>
+        <div class="card"><h3>2 台目にも対応</h3><p>2 台目の FS23 を F18 系で焼き込めば、別の割り当てで同時に使えます。</p></div>
+      </div>
+      <p class="meta">そのほか：Dock に出ないメニューバー常駐 / 設定の自動保存 / ログイン時の自動起動 / 新バージョンの通知</p>
+    </div>
+  </section>
+
+  <section id="requirements">
+    <div class="wrap">
+      <h2>動作環境と対応機種</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>OS</th><td>macOS 13.0（Ventura）以降</td></tr>
+          <tr><th>Mac</th><td>Apple Silicon（M1 以降）</td></tr>
+          <tr><th>必要な権限</th><td>アクセシビリティ（キー入力の検知と送出に使用。これ 1 つだけです）</td></tr>
+          <tr><th>対応機種</th><td>PC Sensor FS23（3 ボタン USB フットスイッチ）<br>
+            購入先の例: <a href="https://www.amazon.co.jp/dp/B0FRMVL5SP">奥踏み式（Amazon.co.jp）</a> / <a href="https://www.amazon.co.jp/dp/B0FMY3BKDT">前踏み式（Amazon.co.jp）</a></td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup">
+    <div class="wrap">
+      <h2>初期設定：ペダルへのキー焼き込み</h2>
+      <p class="sub">アプリは、各ペダルが決まったキーを送る前提で動きます。出荷時の設定とは異なることがあるので、最初にメーカー製ソフト <strong>Elfkey</strong> で書き込んでください。</p>
+
+      <div class="table-wrap">
+        <table>
+          <tr><th>ペダル</th><th>1 台目（Device 1）</th><th>2 台目（Device 2）※任意</th></tr>
+          <tr><td>1</td><td><kbd>F13</kbd></td><td><kbd>F18</kbd></td></tr>
+          <tr><td>2</td><td><kbd>⌥ Option</kbd> + <kbd>F13</kbd></td><td><kbd>⌥ Option</kbd> + <kbd>F18</kbd></td></tr>
+          <tr><td>3</td><td><kbd>⌃ Control</kbd> + <kbd>F13</kbd></td><td><kbd>⌃ Control</kbd> + <kbd>F18</kbd></td></tr>
+        </table>
+      </div>
+
+      <ol class="steps">
+        <li><a href="https://pcsensor.com/download/">pcsensor.com/download</a> から Elfkey をダウンロードします（macOS は Apple Silicon / ARM 版）。</li>
+        <li>フットスイッチを USB 接続し、Elfkey を起動します。</li>
+        <li>各ペダルに上の表のキーを割り当て、デバイスへ書き込みます。</li>
+      </ol>
+      <div class="note"><strong>コツ：</strong>F13 / F18 は Mac のキーボードでは押せません。Elfkey 画面内の<strong>ソフトウェアキーボード</strong>から入力し、Option / Control は修飾キーとして組み合わせて指定してください。</div>
+      <p>2 台目は、1 台目と同じキーだと OS から区別できないため F18 系を使います。アプリの設定画面では各モードに <strong>Device 1 (F13) / Device 2 (F18)</strong> のタブが表示されます。</p>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <h2>インストール</h2>
+      <ol class="steps">
+        <li><a href="https://github.com/neuvecom/footswitch-controller/releases/latest">Releases</a> から <code>FootswitchController.dmg</code> をダウンロードします。</li>
+        <li>DMG を開き、<code>FootswitchController.app</code> を「アプリケーション」フォルダへドラッグします。</li>
+        <li>アプリを起動します。署名・公証済みなので、そのまま開けます。</li>
+        <li>初回はセットアップ画面が表示されます。「アクセシビリティ設定を開く」から <strong>システム設定 → プライバシーとセキュリティ → アクセシビリティ</strong> で Footswitch Controller をオンにしてください。</li>
+        <li>許可は自動で検知され、すぐに監視が始まります（再起動は不要）。</li>
+      </ol>
+      <h3>アップデート</h3>
+      <p>新しいバージョンが出るとメニューバーのメニューに「新しいバージョン … があります」と表示されます。「ダウンロード」から DMG を入手し、アプリケーションフォルダのアプリを置き換えてください。設定はそのまま引き継がれます。</p>
+    </div>
+  </section>
+
+  <section id="usage">
+    <div class="wrap">
+      <h2>使い方</h2>
+      <h3>1. 設定画面を開く</h3>
+      <p>メニューバーのアイコンをクリックし、<strong>「設定…」</strong>を選びます。</p>
+      <h3>2. プロフィール（アプリ）を選ぶ</h3>
+      <p>左のリストの <strong>Default</strong> はどのアプリにもマッチする共通設定です。特定のアプリ用の設定を作るには、そのアプリを前面にした状態で <strong>「現在のアプリを追加」</strong> を押します。</p>
+      <h3>3. モードとボタンを設定する</h3>
+      <p>プロフィールごとに複数の<strong>モード</strong>を作れます（「モード追加」）。各モードで 3 つのボタンにアクションを選び、内容を入力します。アクションに「Switch Mode」を選ぶと、ペダルでモードを切り替えられます。</p>
+      <h3>4. 踏んで確認</h3>
+      <p>設定は自動保存されます。メニューバーのメニューには現在のプロフィール・モードと<strong>検知ログ</strong>が表示されるので、ペダルが正しく反応しているか確認できます。</p>
+      <div class="note">「ログイン時に起動」はメニューバーのメニューからオン / オフできます。</div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <h2>トラブルシューティング / よくある質問</h2>
+
+      <details>
+        <summary>ペダルを踏んでも何も起きない</summary>
+        <ol>
+          <li>メニューバーのメニューで「アクセシビリティ権限: 許可済み」になっているか確認してください。</li>
+          <li>メニューの「検知ログ」にペダルの入力が出ているか確認します。出ていない場合は、Elfkey でのキー焼き込み（<a href="#setup">初期設定</a>）を見直してください。</li>
+          <li>「デバッグ: 全キーを記録」をオンにすると、ペダルが実際に送っているキーを確認できます。F13 系なら <code>key=105</code> と表示されます。</li>
+          <li>ログには出るのに動作しない場合は、前面のアプリに対応するプロフィール・モードの割り当てを確認してください。</li>
+        </ol>
+      </details>
+
+      <details>
+        <summary>許可済みなのに動かない / アップデート後に動かなくなった</summary>
+        <p>macOS の権限情報が古いまま残っていることがあります。<strong>システム設定 → プライバシーとセキュリティ → アクセシビリティ</strong> で Footswitch Controller を一度「−」で削除し、アプリを再起動して許可し直してください。</p>
+        <p>それでも直らない場合は、ターミナルで次を実行して権限をリセットし、アプリを起動し直します。</p>
+        <pre><code>tccutil reset Accessibility com.luckysama.footswitch-controller</code></pre>
+      </details>
+
+      <details>
+        <summary>Intel Mac で使えますか？</summary>
+        <p>現在配布しているビルドは Apple Silicon（M1 以降）向けです。</p>
+      </details>
+
+      <details>
+        <summary>キーストロークに F13 を割り当てられない</summary>
+        <p>F13 はペダル自身が送るキーのため、送出するとアプリが自分の入力を再び拾ってしまいます。ループ防止のため、送出キーとしての F13 は使えない仕様です。</p>
+      </details>
+
+      <details>
+        <summary>Mac App Store では配布しないのですか？</summary>
+        <p>App Store アプリに必須のサンドボックス環境では、キー入力の監視・送出が動作しないため、GitHub Releases での配布としています（Developer ID 署名 + Apple 公証済み）。</p>
+      </details>
+
+      <details>
+        <summary>他の機種のフットスイッチでも使えますか？</summary>
+        <p>動作確認しているのは PC Sensor FS23 のみです。ただし、上の表のキー（F13 / ⌥F13 / ⌃F13）を送るように設定できる機器であれば、同じように動く可能性があります。</p>
+      </details>
+
+      <details>
+        <summary>設定はどこに保存されますか？</summary>
+        <p><code>~/Library/Application Support/com.luckysama.footswitch-controller/settings.json</code> に保存されます。別の Mac への移行時やバックアップにご利用ください。</p>
+      </details>
+
+      <details>
+        <summary>アンインストール方法</summary>
+        <ol>
+          <li>メニューバーのメニューから「終了」します。</li>
+          <li>「アプリケーション」フォルダの <code>FootswitchController.app</code> をゴミ箱に入れます。</li>
+          <li>設定も消す場合は、上記の設定フォルダを削除し、アクセシビリティ一覧からも削除してください。</li>
+        </ol>
+      </details>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap">
+      <h2>プライバシー</h2>
+      <p>Footswitch Controller は、ペダルから送られるキー入力を検知するためにアクセシビリティ権限を使いますが、入力内容を保存・送信することはありません。設定はお使いの Mac 内にのみ保存されます。</p>
+      <p>通信は、アップデート確認のために GitHub の公開 API（最新リリース情報）へアクセスすることのみです。個人を特定する情報は送信しません。</p>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <h2>お問い合わせ・不具合報告</h2>
+      <p>不具合のご報告やご要望は、GitHub の Issues からお寄せください。報告の際は次の情報があると調査がスムーズです。</p>
+      <ul>
+        <li>アプリのバージョン（メニューバーのメニュー下部に表示）</li>
+        <li>macOS のバージョンと Mac の機種</li>
+        <li>起きている現象と、再現する手順</li>
+      </ul>
+      <div class="btns">
+        <a class="btn primary" href="https://github.com/neuvecom/footswitch-controller/issues/new">Issue を作成する</a>
+        <a class="btn" href="https://github.com/neuvecom/footswitch-controller">ソースコード（GitHub）</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 neuvecom · <a href="https://github.com/neuvecom/footswitch-controller/blob/main/LICENSE">MIT License</a></span>
+    <span>PC Sensor・FS23・Elfkey は各社の商標です。本アプリはメーカー非公式です。</span>
+  </div>
+</footer>
+
+</body>
+</html>
